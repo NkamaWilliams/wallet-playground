@@ -9,6 +9,7 @@ import type { UiWallet, UiWalletAccount } from "@wallet-standard/react";
 export function toUiWallet(wallet: Wallet): UiWallet {
     const accounts: UiWalletAccount[] = wallet.accounts.map(acc => {
         return {
+            '~uiWalletHandle': Symbol(),
             address: acc.address,
             chains: acc.chains,
             icon: acc.icon,

@@ -9,12 +9,13 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@solana/react": "^3.0.3",
     "@wallet-standard/core": "^1.1.1",
     "@wallet-standard/react": "^1.0.1",
+    "gill": "file:/home/liwlnakam/Documents/gill/packages/gill",
     "next": "15.5.3",
     "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "gill": "file:/home/liwlnakam/Documents/gill/packages/gill"
+    "react-dom": "19.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

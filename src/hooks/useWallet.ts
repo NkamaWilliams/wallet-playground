@@ -1,49 +1,81 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useWalletDiscovery } from "./useWalletDiscovery";
-import { UiWallet } from "@wallet-standard/react";
-import type { StandardConnectFeature, StandardDisconnectFeature, Wallet } from "@wallet-standard/core";
+import type { StandardConnectFeature, StandardDisconnectFeature, Wallet, WalletAccount } from "@wallet-standard/core";
+import { toUiWallet } from "@/utils/ui-wallet";
 
-export function useWallet() {
-    const {wallets} = useWalletDiscovery();
+export function useWalletHook() {
+    const { wallets } = useWalletDiscovery();
     const [selectedWallet, setSelectedWallet] = useState<Wallet | null>(null);
-    const [connected, setConnected] = useState<boolean>(false);
+    const [accounts, setAccounts] = useState<readonly WalletAccount[]>([]);
 
-    const selectWallet = async (wallet: Wallet | null) => {
+    const connected = !!selectedWallet;
+
+    const getConnectFeature = useCallback((wallet: Wallet) => {
+        return wallet.features["standard:connect"] as StandardConnectFeature["standard:connect"] | undefined;
+    }, [])
+
+    const getDisconnectFeature = useCallback((wallet: Wallet) => {
+        return wallet.features["standard:disconnect"] as StandardDisconnectFeature["standard:disconnect"] | undefined;
+    }, [])
+
+    /**
+     * Connects to a given wallet and saves the outputted accounts
+     * @param wallet 
+     * @returns 
+     */
+    const connect = useCallback(async (wallet: Wallet | null) => {
         if (!wallet) {
             setSelectedWallet(null);
-            setConnected(false);
             return;
         }
-        const connectFeature = wallet.features["standard:connect"] as StandardConnectFeature["standard:connect"] | undefined;
-        if (connectFeature) {
-            console.log("Connect feature found:", connectFeature);
-            await connectFeature.connect();
-        } else {
-            alert(`No connect feature found on wallet ${wallet.name}`);
-        }
-        setSelectedWallet(wallet);
-        setConnected(true);
-    }
 
-    const disconnect = async () => {
+        const connectFeature = getConnectFeature(wallet);
+        if (connectFeature) {
+            try {
+                const output = await connectFeature.connect();
+                setAccounts(output.accounts);
+            } catch (err) {
+                console.error(`An error occured trying to connect to wallet ${wallet.name}:`, err);
+                return;
+            }
+        } else {
+            console.warn(`No connect feature found on wallet ${wallet.name}`);
+            return;
+        }
+
+        setSelectedWallet(wallet);
+    }, [getConnectFeature])
+
+    /**
+     * Disconnects from wallet currently connected to
+     * @returns 
+     */
+    const disconnect = useCallback(async () => {
         if (!connected || !selectedWallet) return;
 
-        const disconnectFeature = selectedWallet?.features["standard:disconnect"] as StandardDisconnectFeature["standard:disconnect"] | undefined;
+        const disconnectFeature = getDisconnectFeature(selectedWallet);
         if (disconnectFeature) {
-            console.log("Disconnect feature found:", disconnectFeature);
-            await disconnectFeature.disconnect();
+            try {
+                await disconnectFeature.disconnect();
+            } catch (err) {
+                console.error(`An error occured trying to disconnect from wallet ${selectedWallet.name}:`, err);
+                return;
+            }
         } else {
-            alert(`No disconnect feature found on wallet ${selectedWallet.name}`)
+            console.warn(`No disconnect feature found on wallet ${selectedWallet.name}`);
+            return;
         }
         setSelectedWallet(null);
-        setConnected(false);
-    }
+        setAccounts([]);
+    }, [connected, selectedWallet, getDisconnectFeature]);
 
     return {
         wallets,
-        selectedWallet,
-        selectWallet,
+        wallet: selectedWallet,
+        accounts,
         connected,
-        disconnect
+        connect,
+        disconnect,
+        uiWallet: selectedWallet ? toUiWallet(selectedWallet) : null
     }
 }
