@@ -2,10 +2,11 @@
 
 import { useWallet } from "./WalletContext";
 import { Wallet } from "@wallet-standard/core";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Send from "./send";
 
 export default function Home() {
-  const {connect, disconnect, wallet, connected, wallets, accounts} = useWallet();
+  const {connect, disconnect, wallet, connected, wallets} = useWallet();
   const [viewWallets, setViewWallets] = useState<boolean>(false);
 
   const handleSelect = () => {
@@ -21,13 +22,20 @@ export default function Home() {
     connect(wallet);
     setViewWallets(false);
   }
+  
+
+  useEffect(() => {
+    console.log(wallet);
+  }, [wallet])
+
   return (
     <div className="min-h-screen p-8 pb-20 gap-16 sm:p-20 bg-black">
+      <p>Connected: {`${connected}`}</p>
       <button
         onClick={handleSelect}
         className="px-6 py-3 text-white bg-purple-500 rounded-xl font-semibold hover:cursor-pointer hover:bg-purple-600 active:scale-95"
       >
-        {!connected ? "Select Wallet" : wallet?.accounts[0].address.slice(0, 11)+"..."}
+        {!connected ? "Select Wallet" : wallet?.accounts[0]?.address.slice(0, 9)+"..."}
       </button>
 
       {viewWallets && !connected &&
@@ -52,14 +60,9 @@ export default function Home() {
       <br />
       
       {/* {!!accounts && <Tx />} */}
-      <button
-        // onClick={
-        //   handleSend
-        // }
-        className="px-6 py-3 text-white bg-purple-500 rounded-xl font-semibold hover:cursor-pointer hover:bg-blue-600 active:scale-95"
-      >
-        Send Sol
-      </button>
+      {!!wallet && !!wallet.accounts && wallet.accounts.length > 0 && (
+        <Send wallet={wallet}/>
+      )}
     </div>
   );
 }

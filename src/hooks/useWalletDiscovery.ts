@@ -1,6 +1,4 @@
-// import { toUiWallet } from "@/utils/ui-wallet";
 import { getWallets, Wallet } from "@wallet-standard/core";
-// import { UiWallet } from "@wallet-standard/react";
 import { useEffect, useState } from "react";
 
 const isSolanaWallet = (wallet: Wallet) =>  wallet.chains.some(chain => chain.startsWith("solana:"));

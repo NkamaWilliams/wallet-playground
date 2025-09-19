@@ -2,6 +2,9 @@ import { useCallback, useState } from "react";
 import { useWalletDiscovery } from "./useWalletDiscovery";
 import type { StandardConnectFeature, StandardDisconnectFeature, Wallet, WalletAccount } from "@wallet-standard/core";
 import { toUiWallet } from "@/utils/ui-wallet";
+import { SolanaTransaction } from "@/wallet-types/transaction";
+import { getTransactionCodec, getTransactionEncoder } from "gill";
+import { SolanaSignAndSendTransactionFeature, SolanaSignTransactionFeature } from "@solana/wallet-standard-features";
 
 export function useWalletHook() {
     const { wallets } = useWalletDiscovery();
@@ -9,6 +12,16 @@ export function useWalletHook() {
     const [accounts, setAccounts] = useState<readonly WalletAccount[]>([]);
 
     const connected = !!selectedWallet;
+
+    const getSignTransactionFeature = useCallback((wallet: Wallet) => {
+        // return wallet.features["solana:signAndSendTransaction"] as SolanaSignAndSendTransactionFeature["solana:signAndSendTransaction"] | undefined;
+        return wallet.features["solana:signTransaction"] as SolanaSignTransactionFeature["solana:signTransaction"] | undefined;
+    }, [])
+
+    const getSignAndSendTransactionFeature = useCallback((wallet: Wallet) => {
+        // return wallet.features["solana:signAndSendTransaction"] as SolanaSignAndSendTransactionFeature["solana:signAndSendTransaction"] | undefined;
+        return wallet.features["solana:signAndSendTransaction"] as SolanaSignAndSendTransactionFeature["solana:signAndSendTransaction"] | undefined;
+    }, [])
 
     const getConnectFeature = useCallback((wallet: Wallet) => {
         return wallet.features["standard:connect"] as StandardConnectFeature["standard:connect"] | undefined;
@@ -25,25 +38,24 @@ export function useWalletHook() {
      */
     const connect = useCallback(async (wallet: Wallet | null) => {
         if (!wallet) {
-            setSelectedWallet(null);
             return;
         }
-
+        setSelectedWallet(wallet)
         const connectFeature = getConnectFeature(wallet);
         if (connectFeature) {
             try {
                 const output = await connectFeature.connect();
+                console.log(output)
                 setAccounts(output.accounts);
             } catch (err) {
                 console.error(`An error occured trying to connect to wallet ${wallet.name}:`, err);
-                return;
+                setSelectedWallet(null);
             }
         } else {
             console.warn(`No connect feature found on wallet ${wallet.name}`);
-            return;
+            setSelectedWallet(null);
         }
-
-        setSelectedWallet(wallet);
+        console.log(wallet);
     }, [getConnectFeature])
 
     /**
@@ -69,6 +81,40 @@ export function useWalletHook() {
         setAccounts([]);
     }, [connected, selectedWallet, getDisconnectFeature]);
 
+    const signAndSendTransaction = useCallback(async (tx: Uint8Array) => {
+        if (!connected || !selectedWallet) throw new Error("Select a wallet to use this function");
+
+        const signTransactionFeature = getSignAndSendTransactionFeature(selectedWallet);
+        console.log(signTransactionFeature);
+        console.log("TX:", tx);
+        const result = await signTransactionFeature?.signAndSendTransaction({
+            account: accounts[0],
+            transaction: tx,
+            chain: "solana:devnet",
+        });
+        console.log("RESULT:", result);
+        if (result) {
+            return result[0].signature;
+        }
+    }, [connected, selectedWallet, accounts]);
+
+    const signTransaction = useCallback(async (tx: Uint8Array) => {
+        if (!connected || !selectedWallet) throw new Error("Select a wallet to use this function");
+
+        const signTransactionFeature = getSignTransactionFeature(selectedWallet);
+        console.log(signTransactionFeature);
+        console.log("TX:", tx);
+        const result = await signTransactionFeature?.signTransaction({
+            account: accounts[0],
+            transaction: tx,
+            chain: "solana:devnet",
+        });
+        console.log("RESULT:", result);
+        if (result) {
+            return result[0].signedTransaction;
+        }
+    }, [connected, selectedWallet, accounts]);
+
     return {
         wallets,
         wallet: selectedWallet,
@@ -76,6 +122,8 @@ export function useWalletHook() {
         connected,
         connect,
         disconnect,
-        uiWallet: selectedWallet ? toUiWallet(selectedWallet) : null
+        uiWallet: selectedWallet ? toUiWallet(selectedWallet) : null,
+        signTransaction,
+        signAndSendTransaction
     }
 }
