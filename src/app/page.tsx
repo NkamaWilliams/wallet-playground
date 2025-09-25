@@ -29,7 +29,7 @@ export default function Home() {
   }, [wallet])
 
   return (
-    <div className="min-h-screen p-8 pb-20 gap-16 sm:p-20 bg-black">
+    <div className="min-h-screen p-8 pb-20 gap-16 sm:p-20 bg-black flex flex-col items-center justify-center">
       <p>Connected: {`${connected}`}</p>
       <button
         onClick={handleSelect}
