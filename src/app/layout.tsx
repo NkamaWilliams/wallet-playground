@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 // import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import WalletProvider from "./WalletContext";
+// import WalletProvider from "./WalletContext";
+// import { WalletProvider } from "./providers/wallet";
+import WalletProviderWrapper from "./providers/wallet-provider";
+import QueryProvider from "./providers/query-provider";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -27,10 +30,13 @@ export default function RootLayout({
     <html lang="en">
       <body
         // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className="flex items-center py-6"
       >
-        <WalletProvider>
-          {children}
-        </WalletProvider>
+        <QueryProvider>
+          <WalletProviderWrapper>
+            {children}
+          </WalletProviderWrapper>
+        </QueryProvider>
       </body>
     </html>
   );

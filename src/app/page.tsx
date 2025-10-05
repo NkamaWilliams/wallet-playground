@@ -1,68 +1,70 @@
 "use client";
 
-import { useWallet } from "./WalletContext";
-import { Wallet } from "@wallet-standard/core";
-import { useEffect, useState } from "react";
-import Send from "./send";
+import { useWallet } from "@gillsdk/react";
+import SignInTester from "./signIn/page";
 
-export default function Home() {
-  const {connect, disconnect, wallet, connected, wallets} = useWallet();
-  const [viewWallets, setViewWallets] = useState<boolean>(false);
-
-  const handleSelect = () => {
-    if (!connected) {
-      setViewWallets(prev => !prev);
-    }
-    else {
-      disconnect();
-    }
-  }
-
-  const handleChooseWallet = async (wallet: Wallet) => {
-    connect(wallet);
-    setViewWallets(false);
-  }
-  
-
-  useEffect(() => {
-    console.log(wallet);
-  }, [wallet])
+export default function WalletConnectPanel() {
+  const { account, wallet, wallets, connect, disconnect, status } = useWallet();
 
   return (
-    <div className="min-h-screen p-8 pb-20 gap-16 sm:p-20 bg-black flex flex-col items-center justify-center">
-      <p>Connected: {`${connected}`}</p>
-      <button
-        onClick={handleSelect}
-        className="px-6 py-3 text-white bg-purple-500 rounded-xl font-semibold hover:cursor-pointer hover:bg-purple-600 active:scale-95"
-      >
-        {!connected ? "Select Wallet" : wallet?.accounts[0]?.address.slice(0, 9)+"..."}
-      </button>
+    <section className="max-w-2xl mx-auto space-y-6">
+      {/* Wallet Info */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-6 border border-gray-200 dark:border-gray-800">
+        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">
+          Wallet Connection
+        </h2>
 
-      {viewWallets && !connected &&
-      <div className="w-2xs mt-2 rounded-xl">
-        {wallets.length > 0 && wallets.map((w, idx) => 
-          <div key={idx}>
-          <button 
-            // key={idx}
-            className="w-full flex gap-2 px-3 py-2 justify-center items-center bg-gray-950 hover:cursor-pointer hover:bg-gray-800 active:bg-gray-900"
-            onClick={() => handleChooseWallet(w)}
-          >
-            <img alt={w.name} src={w.icon} width={25} />
-            <p className="font-medium text-lg">{w.name}</p>
-          </button>
-          {idx != wallets.length - 1 && <hr className="text-gray-800 bg-gray-950"/>}
+        <div className="space-y-2 text-gray-700 dark:text-gray-300">
+          <p>
+            <span className="font-medium text-gray-900 dark:text-gray-100">Status:</span>{" "}
+            <span className="capitalize">{status}</span>
+          </p>
+          <p>
+            <span className="font-medium text-gray-900 dark:text-gray-100">Connected Wallet:</span>{" "}
+            {wallet ? wallet.name : <span className="italic text-gray-500">None</span>}
+          </p>
+          <p>
+            <span className="font-medium text-gray-900 dark:text-gray-100">Account:</span>{" "}
+            {account ? account.address : <span className="italic text-gray-500">None</span>}
+          </p>
+        </div>
+      </div>
+
+      {/* Available Wallets */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-6 border border-gray-200 dark:border-gray-800">
+        <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
+          Available Wallets
+        </h3>
+        {wallets.length > 0 ? (
+          <div className="flex flex-wrap gap-3">
+            {wallets.map((w) => (
+              <button
+                key={w.name}
+                onClick={() => connect(w)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                Connect {w.name}
+              </button>
+            ))}
           </div>
-          )}
-          {wallets.length == 0 && <p className="px-3 py-2 bg-gray-950 text-white font-semibold">No Wallets Found!</p>}
-      </div>}
-      
-      <br />
-      <br />
-      
-      {/* {!!accounts && <Tx />} */}
-      {!!wallet && !!wallet.accounts && wallet.accounts.length > 0 && (
-        <Send wallet={wallet}/>
+        ) : (
+          <p className="text-gray-500 italic">No wallets detected.</p>
+        )}
+      </div>
+
+      {/* Disconnect + SignIn */}
+      {wallet && (
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-6 border border-gray-200 dark:border-gray-800 space-y-4">
+          <button
+            onClick={() => disconnect(wallet)}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
+          >
+            Disconnect
+          </button>
+
+          <SignInTester />
+        </div>
       )}
-    </div>
+    </section>
   );
 }
