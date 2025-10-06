@@ -1,3 +1,4 @@
+"use client"
 import React, { createContext, ReactNode, useContext, useMemo, useState } from "react";
 import { getWalletFeature, useWallets } from "@wallet-standard/react";
 import type { UiWallet, UiWalletAccount } from "@wallet-standard/ui";

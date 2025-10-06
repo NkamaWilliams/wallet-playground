@@ -5,6 +5,8 @@ import "./globals.css";
 // import { WalletProvider } from "./providers/wallet";
 // import WalletProviderWrapper from "./providers/wallet-provider";
 // import QueryProvider from "./providers/query-provider";
+import GillWalletProvider from "@/providers/wallet";
+import QueryProvider from "@/providers/query";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -30,9 +32,13 @@ export default function RootLayout({
     <html lang="en">
       <body
         // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        className="flex items-center py-6"
+        className="flex items-center py-6 bg-gray-800"
       >
-        {children}
+        <QueryProvider>
+          <GillWalletProvider>
+            {children}
+          </GillWalletProvider>
+        </QueryProvider>
       </body>
     </html>
   );
