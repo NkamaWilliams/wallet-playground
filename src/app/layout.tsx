@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 // import WalletProvider from "./WalletContext";
 // import { WalletProvider } from "./providers/wallet";
-import WalletProviderWrapper from "./providers/wallet-provider";
-import QueryProvider from "./providers/query-provider";
+// import WalletProviderWrapper from "./providers/wallet-provider";
+// import QueryProvider from "./providers/query-provider";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -32,11 +32,7 @@ export default function RootLayout({
         // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         className="flex items-center py-6"
       >
-        <QueryProvider>
-          <WalletProviderWrapper>
-            {children}
-          </WalletProviderWrapper>
-        </QueryProvider>
+        {children}
       </body>
     </html>
   );
