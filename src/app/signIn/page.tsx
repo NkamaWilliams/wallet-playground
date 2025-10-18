@@ -25,6 +25,16 @@ export default function SignInTester() {
     console.log(res);
   }
 
+  const verifySignin = () => {
+    if (!mutation.data) return
+    const verify = verifySignIn(
+      {
+        domain: "localhost:3000",
+        statement: "Sign in to Williams' Localhost Dapp up",
+      }, mutation.data);
+    alert(verify ? "Sign In Message is valid" : "Sign In Message is invalid")
+  }
+
   return (
     <section className="mt-8">
       <h2 className="text-xl font-semibold mb-3">Sign In Test</h2>
@@ -37,6 +47,16 @@ export default function SignInTester() {
         }`}
       >
         {mutation.isPending ? "Signing In..." : "Test Sign In"}
+      </button>
+
+      <button
+        disabled={mutation.isPending}
+        onClick={verifySignin}
+        className={`px-4 py-2 ml-2 rounded-lg shadow text-white ${
+          mutation.isPending ? "bg-gray-500" : "bg-green-600 hover:bg-green-700"
+        }`}
+      >
+        Verify Sign In Output
       </button>
 
       {mutation.error && (
